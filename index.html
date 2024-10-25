@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monitoramento em Tempo Real</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="chart.js"></script>
+</head>
+
+<body>
+  <h1>Smart Gloves</h1>
+ <!-- Switch para modo claro/escuro -->
+ <label class="switch">
+  <input type="checkbox" id="theme-switch">
+  <span class="slider round"></span>
+</label>
+  <!-- Menu de abas -->
+  <div class="tabs">
+    <button class="tablink" onclick="openTab(event, 'Sensores')">Sensores</button>
+    <button class="tablink" onclick="openTab(event, 'Grafico')">Gráfico</button>
+  </div>
+
+  <!-- Aba Sensores -->
+  <div id="Sensores" class="tabcontent">
+    <section class="darkcolor">
+    <h2>Comunicação</h2>
+    <div class="status">Status: <span id="status" class="disconnected">Desconectado</span></div>
+
+    <div class="voice-selector">
+      <label for="voice">Selecione a Voz:</label>
+      <select id="voice">
+        <option value="Masculino">Masculina</option>
+        <option value="Feminino">Feminina</option>
+      </select>
+    </div>
+
+    <button id="toggle-sound" class="toggle-sound">Ativar Som</button>
+
+    <div id="message" class="message"></div>
+    </section>
+    <div class="sensor-data">
+      <div class="sensor" id="sensor1">Sensor 1: --</div>
+      <div class="sensor" id="sensor2">Sensor 2: --</div>
+      <div class="sensor" id="sensor3">Sensor 3: --</div>
+      <div class="sensor" id="sensor4">Sensor 4: --</div>
+      <div class="sensor" id="sensor5">Sensor 5: --</div>
+    </div>
+  </div>
+
+  <!-- Aba Gráfico -->
+  <div id="Grafico" class="tabcontent">
+    <h2 class="darkcolor">Gráfico dos Sensores</h2>
+    <div class="chart-container">
+      <canvas id="sensorChart"></canvas>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,83 @@
+#include <ESP8266WiFi.h>
+#include <WebSocketsServer.h>
+
+const char* ssid = "Smart Gloves";
+const char* password = "96700761";
+
+// Configurações de IP fixo
+IPAddress local_IP(192, 168, 0, 200); // IP fixo do ESP-01
+IPAddress gateway(192, 168, 0, 1);
+IPAddress subnet(255, 255, 255, 0);
+
+WebSocketsServer webSocket = WebSocketsServer(81);
+String sensorData;
+bool isWebSocketConnected = false; // Variável para armazenar o estado da conexão WebSocket
+
+void setup() {
+  Serial.begin(9600); // Comunicação serial com o Arduino
+
+  // Conectando ao Wi-Fi com IP fixo
+  if (!WiFi.config(local_IP, gateway, subnet)) {
+    Serial.println("Falha ao configurar IP fixo!");
+  }
+
+  connectToWiFi(); // Conecta ao Wi-Fi
+
+  webSocket.begin();
+  webSocket.onEvent(webSocketEvent);
+}
+
+void loop() {
+  // Verifica a conexão Wi-Fi
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("Desconectado da rede Wi-Fi. Tentando reconectar...");
+    connectToWiFi();
+  }
+
+  // Mantém o WebSocket ativo
+  webSocket.loop();
+
+  // Verifica se a conexão WebSocket está ativa
+  if (!isWebSocketConnected) {
+    Serial.println("Desconectado do WebSocket. Tentando reconectar...");
+    reconnectWebSocket();
+  }
+
+  // Verifica se há dados disponíveis vindos do Arduino
+  if (Serial.available() > 0) {
+    sensorData = Serial.readStringUntil('\n'); // Lê a linha de dados do Arduino
+    webSocket.broadcastTXT(sensorData); // Envia os dados para o browser via WebSocket
+  }
+  delay(100);
+}
+
+// Função para conectar ao Wi-Fi
+void connectToWiFi() {
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.println("Conectando à rede Wi-Fi...");
+  }
+  Serial.println("Conectado à rede Wi-Fi!");
+  Serial.println(WiFi.localIP()); // Mostra o IP fixo no serial
+}
+
+// Função para reconectar ao WebSocket
+void reconnectWebSocket() {
+  // Tente reiniciar o WebSocket
+  webSocket.begin();
+  webSocket.onEvent(webSocketEvent);
+}
+
+// Função chamada quando há eventos do WebSocket
+void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
+  if (type == WStype_TEXT) {
+    Serial.printf("Recebido do cliente [%u]: %s\n", num, payload);
+  } else if (type == WStype_DISCONNECTED) {
+    Serial.printf("Cliente [%u] desconectado.\n", num);
+    isWebSocketConnected = false; // Atualiza o estado da conexão
+  } else if (type == WStype_CONNECTED) {
+    Serial.printf("Cliente [%u] conectado.\n", num);
+    isWebSocketConnected = true; // Atualiza o estado da conexão
+  }
+}
